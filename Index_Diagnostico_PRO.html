@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>Sport & Padel - Diagnóstico PRO</title>
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#151b2f;--panel2:#1d2640;--text:#f8fafc;--muted:#a8b3cf;
+      --accent:#22c55e;--accent2:#38bdf8;--danger:#ef4444;--warn:#f59e0b;--border:#2b3554;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    .app{max-width:1100px;margin:auto;padding:12px}
+    h1{font-size:22px;margin:4px 0 2px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:12px}
+    .video-wrap{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border)}
+    video{width:100%;height:100%;object-fit:cover;background:#000}
+    .badge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.65);padding:7px 10px;border-radius:999px;font-size:12px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
+    .card h2{font-size:16px;margin:0 0 10px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button,select{
+      min-height:44px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);
+      color:var(--text);padding:10px 12px;font-size:14px
+    }
+    button{cursor:pointer;font-weight:700}
+    button.primary{background:var(--accent);color:#08110a;border-color:transparent}
+    button.blue{background:var(--accent2);color:#031019;border-color:transparent}
+    button.warn{background:var(--warn);color:#1a1200;border-color:transparent}
+    button.danger{background:var(--danger);color:white;border-color:transparent}
+    button:disabled{opacity:.45}
+    select{flex:1;min-width:180px}
+    .info{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px}
+    .info div{background:#10172a;padding:8px;border-radius:8px;color:var(--muted)}
+    .info b{color:var(--text)}
+    pre{white-space:pre-wrap;word-break:break-word;background:#080d18;border:1px solid var(--border);padding:10px;border-radius:10px;max-height:320px;overflow:auto;font-size:12px}
+    .status{margin-top:8px;padding:9px;border-radius:9px;background:#10172a;color:var(--muted);font-size:13px}
+    .ok{color:#86efac}.bad{color:#fca5a5}.warntext{color:#fcd34d}
+    .full{grid-column:1/-1}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.app{padding:8px}.video-wrap{border-radius:10px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>Sport & Padel — Diagnóstico PRO</h1>
+  <div class="sub">Teste de câmeras, lentes, resolução, FPS, zoom e capacidades do navegador.</div>
+
+  <div class="video-wrap">
+    <video id="video" autoplay muted playsinline></video>
+    <div class="badge" id="badge">Câmera desligada</div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Controle da câmera</h2>
+      <div class="row">
+        <button class="primary" id="btnStart">Ligar câmera</button>
+        <button id="btnStop">Desligar</button>
+        <button class="blue" id="btnNext">Próxima câmera</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <select id="cameraSelect"></select>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="warn" id="btnWide">Tentar 0,6× / ampla</button>
+        <button id="btnMinZoom">Menor zoom possível</button>
+      </div>
+      <div class="status" id="status">Aguardando início.</div>
+    </section>
+
+    <section class="card">
+      <h2>Configuração atual</h2>
+      <div class="info">
+        <div>Câmera: <b id="iLabel">—</b></div>
+        <div>Facing: <b id="iFacing">—</b></div>
+        <div>Resolução: <b id="iRes">—</b></div>
+        <div>FPS: <b id="iFps">—</b></div>
+        <div>Zoom: <b id="iZoom">—</b></div>
+        <div>Dispositivos: <b id="iCount">0</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Scanner automático</h2>
+      <div class="row">
+        <button class="primary" id="btnScan">Executar diagnóstico completo</button>
+        <button id="btnCopy">Copiar relatório</button>
+      </div>
+      <div class="status">O scanner testa câmeras, resoluções, FPS e restrições aceitas pelo navegador.</div>
+    </section>
+
+    <section class="card">
+      <h2>Teste rápido de resoluções</h2>
+      <div class="row">
+        <button data-res="1280x720">720p</button>
+        <button data-res="1920x1080">1080p</button>
+        <button data-res="2560x1440">2K</button>
+        <button data-res="3840x2160">4K</button>
+      </div>
+    </section>
+
+    <section class="card full">
+      <h2>Relatório</h2>
+      <pre id="report">Nenhum teste executado.</pre>
+    </section>
+
+    <section class="card full">
+      <h2>Capacidades retornadas pelo navegador</h2>
+      <pre id="caps">—</pre>
+    </section>
+  </div>
+</div>
+
+<script>
+const video = document.getElementById('video');
+const cameraSelect = document.getElementById('cameraSelect');
+const statusEl = document.getElementById('status');
+const reportEl = document.getElementById('report');
+const capsEl = document.getElementById('caps');
+const badge = document.getElementById('badge');
+
+let stream = null;
+let videoDevices = [];
+let currentDeviceId = null;
+
+function logStatus(msg, type=''){
+  statusEl.className = 'status ' + type;
+  statusEl.textContent = msg;
+}
+function stopStream(){
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream=null;
+  }
+  video.srcObject=null;
+  badge.textContent='Câmera desligada';
+}
+async function enumerate(){
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  videoDevices = devices.filter(d=>d.kind==='videoinput');
+  cameraSelect.innerHTML='';
+  videoDevices.forEach((d,i)=>{
+    const o=document.createElement('option');
+    o.value=d.deviceId;
+    o.textContent=d.label || `Câmera ${i+1}`;
+    cameraSelect.appendChild(o);
+  });
+  document.getElementById('iCount').textContent=videoDevices.length;
+}
+function updateInfo(track){
+  if(!track) return;
+  const s=track.getSettings ? track.getSettings() : {};
+  const c=track.getCapabilities ? track.getCapabilities() : {};
+  document.getElementById('iLabel').textContent=track.label || 'Sem nome';
+  document.getElementById('iFacing').textContent=s.facingMode || 'não informado';
+  document.getElementById('iRes').textContent=(s.width&&s.height)?`${s.width}×${s.height}`:'não informado';
+  document.getElementById('iFps').textContent=s.frameRate || 'não informado';
+  document.getElementById('iZoom').textContent=s.zoom ?? (c.zoom ? `${c.zoom.min}–${c.zoom.max}` : 'não informado');
+  badge.textContent=`${s.width||'?'}×${s.height||'?'} • ${s.frameRate||'?'} fps`;
+  capsEl.textContent=JSON.stringify({settings:s,capabilities:c,constraints:track.getConstraints?.()||{}},null,2);
+}
+async function startCamera(opts={}){
+  stopStream();
+  const constraints={
+    audio:false,
+    video:{
+      facingMode: opts.facingMode || {ideal:'environment'},
+      width: opts.width || {ideal:1920},
+      height: opts.height || {ideal:1080},
+      frameRate: opts.frameRate || {ideal:30,max:60},
+      resizeMode:'none'
+    }
+  };
+  if(opts.deviceId){
+    delete constraints.video.facingMode;
+    constraints.video.deviceId={exact:opts.deviceId};
+  }
+  try{
+    stream=await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject=stream;
+    await video.play();
+    await enumerate();
+    const track=stream.getVideoTracks()[0];
+    currentDeviceId=track.getSettings().deviceId || opts.deviceId || null;
+    if(currentDeviceId) cameraSelect.value=currentDeviceId;
+    updateInfo(track);
+    logStatus('Câmera aberta com sucesso.','ok');
+    return track;
+  }catch(err){
+    logStatus(`Erro: ${err.name} — ${err.message}`,'bad');
+    throw err;
+  }
+}
+async function applyMinZoom(){
+  if(!stream) return;
+  const track=stream.getVideoTracks()[0];
+  const caps=track.getCapabilities?.()||{};
+  if(!caps.zoom){
+    logStatus('O navegador não informou suporte a zoom.','warntext');
+    return;
+  }
+  try{
+    await track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
+    updateInfo(track);
+    logStatus(`Aplicado o menor zoom permitido: ${caps.zoom.min}×`,'ok');
+  }catch(e){
+    logStatus(`Falha ao aplicar zoom mínimo: ${e.message}`,'bad');
+  }
+}
+async function tryWide(){
+  if(!stream) await startCamera();
+  await applyMinZoom();
+  await enumerate();
+  const rearCandidates=videoDevices.filter(d=>/back|rear|trase|environment/i.test(d.label));
+  if(rearCandidates.length>1){
+    for(const d of rearCandidates){
+      if(d.deviceId!==currentDeviceId){
+        try{
+          await startCamera({deviceId:d.deviceId});
+          logStatus('Outra câmera traseira foi aberta. Compare o campo de visão.','ok');
+          return;
+        }catch(e){}
+      }
+    }
+  }
+  logStatus('Nenhuma segunda câmera traseira foi exposta pelo navegador.','warntext');
+}
+async function runScan(){
+  reportEl.textContent='Executando diagnóstico...\n';
+  const lines=[];
+  function add(s){lines.push(s);reportEl.textContent=lines.join('\n')}
+  add(`Navegador: ${navigator.userAgent}`);
+  add(`Data: ${new Date().toLocaleString('pt-BR')}`);
+  add('');
+  try{
+    await startCamera();
+  }catch(e){
+    add(`Falha inicial: ${e.name} - ${e.message}`);
+    return;
+  }
+  await enumerate();
+  add(`Dispositivos de vídeo encontrados: ${videoDevices.length}`);
+  videoDevices.forEach((d,i)=>add(`${i+1}. ${d.label||'Sem nome'} | deviceId=${d.deviceId.slice(0,12)}... | groupId=${d.groupId?.slice(0,12)||'—'}...`));
+  add('');
+  const tests=[
+    {name:'environment ideal', cfg:{facingMode:{ideal:'environment'}}},
+    {name:'environment exact', cfg:{facingMode:{exact:'environment'}}},
+    {name:'720p 30fps', cfg:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}},
+    {name:'1080p 30fps', cfg:{width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}}},
+    {name:'2K', cfg:{width:{ideal:2560},height:{ideal:1440},frameRate:{ideal:30}}},
+    {name:'4K', cfg:{width:{ideal:3840},height:{ideal:2160},frameRate:{ideal:30}}},
+    {name:'60fps', cfg:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:60,max:60}}}
+  ];
+  for(const t of tests){
+    try{
+      const track=await startCamera(t.cfg);
+      const s=track.getSettings();
+      add(`OK  ${t.name}: ${s.width||'?'}×${s.height||'?'} @ ${s.frameRate||'?'}fps | ${track.label||'Sem nome'}`);
+    }catch(e){
+      add(`NÃO ${t.name}: ${e.name}`);
+    }
+  }
+  add('');
+  add('Teste individual por deviceId:');
+  for(const d of videoDevices){
+    try{
+      const track=await startCamera({deviceId:d.deviceId});
+      const s=track.getSettings();
+      const c=track.getCapabilities?.()||{};
+      add(`OK  ${d.label||'Sem nome'} -> ${s.width||'?'}×${s.height||'?'} | facing=${s.facingMode||'—'} | zoom=${c.zoom?`${c.zoom.min}-${c.zoom.max}`:'não informado'}`);
+    }catch(e){
+      add(`NÃO ${d.label||'Sem nome'}: ${e.name}`);
+    }
+  }
+  add('');
+  const rear=videoDevices.filter(d=>/back|rear|trase|environment/i.test(d.label));
+  add(`Câmeras traseiras identificadas pelo nome: ${rear.length}`);
+  if(rear.length<=1) add('CONCLUSÃO: o navegador expôs apenas uma câmera traseira lógica; a lente 0,6× não está disponível via HTML neste navegador/aparelho.');
+  else add('CONCLUSÃO: há mais de uma câmera traseira. Teste cada uma no seletor para identificar a ultra-wide.');
+}
+document.getElementById('btnStart').onclick=()=>startCamera();
+document.getElementById('btnStop').onclick=()=>{stopStream();logStatus('Câmera desligada.')};
+document.getElementById('btnNext').onclick=async()=>{
+  if(!videoDevices.length) await enumerate();
+  if(!videoDevices.length) return;
+  let i=videoDevices.findIndex(d=>d.deviceId===currentDeviceId);
+  i=(i+1)%videoDevices.length;
+  await startCamera({deviceId:videoDevices[i].deviceId});
+};
+document.getElementById('btnWide').onclick=tryWide;
+document.getElementById('btnMinZoom').onclick=applyMinZoom;
+document.getElementById('btnScan').onclick=runScan;
+document.getElementById('btnCopy').onclick=async()=>{
+  await navigator.clipboard.writeText(reportEl.textContent);
+  logStatus('Relatório copiado.','ok');
+};
+cameraSelect.onchange=()=>startCamera({deviceId:cameraSelect.value});
+document.querySelectorAll('[data-res]').forEach(btn=>{
+  btn.onclick=async()=>{
+    const [w,h]=btn.dataset.res.split('x').map(Number);
+    await startCamera({deviceId:currentDeviceId,width:{ideal:w},height:{ideal:h}});
+  };
+});
+if(!navigator.mediaDevices?.getUserMedia){
+  logStatus('Este navegador não suporta acesso à câmera.','bad');
+}else{
+  enumerate().catch(()=>{});
+}
+</script>
+</body>
+</html>
